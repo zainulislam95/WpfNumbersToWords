@@ -6,17 +6,36 @@ namespace ConvertCurrencyToWords
 {
     public partial class MainWindow : Window
     {
+        #region On Load
+
         public MainWindow()
         {
             InitializeComponent();
         }
 
-        private static readonly Regex _regex = new Regex("[^0-9,]+"); //regex that matches disallowed text
+        #endregion
+
+        #region Check Valid Currency
+
+        //RegularExpression that accepts number and commas only
+        private static readonly Regex _regex = new Regex("[^0-9,]+");
+         
+        // Summary:
+        //     Checks if the input value matches provideds RegularExpression. 
+        //
+        // Parameters:
+        //   text:
+        //     A string containing a number to match with RegularExpression.
+        //  
+        // Returns:
+        //     true if text when input value doesn't match; otherwise, false.
         private static bool IsTextAllowed(string text)
         {
             return !_regex.IsMatch(text);
         }
-         
+
+        #endregion
+
         private void BtnConvert_Click(object sender, RoutedEventArgs e)
         {
             string strNumberIn = txtboxNumber.Text;
@@ -27,13 +46,14 @@ namespace ConvertCurrencyToWords
                 if (b)
                 {
                     if (strNumberIn.Contains(".") || strNumberIn.Contains("-"))//
-                    {
-                        //throw new System.ArgumentException("All characters must be digits. No negative numbers and no commas. Use periods to separate dollars and cents.", strNumberIn.ToString());
+                    { 
                         throw new System.ArgumentException($"All characters must be digits. No negative numbers and no periods. " +
                                                     $"Use commas to separate dollars and cents.", strNumberIn.ToString());
                     }
+
                     int decimalPlace = strNumberIn.IndexOf(",");
-                    if (decimalPlace == -1)  // there is NO decimal place here
+                    // input value contians NO decimal value
+                    if (decimalPlace == -1)  
                     {
                         numberOfDecimals = 0;
                     }
@@ -148,9 +168,9 @@ namespace ConvertCurrencyToWords
                         switch (numDigits)
                         {
                             case 1://ones' range    
-                                word = ones(Number); isDone = true; break;
+                                word = Ones(Number); isDone = true; break;
                             case 2://tens' range    
-                                word = tens(Number); isDone = true; break;
+                                word = Tens(Number); isDone = true; break;
                             case 3://hundreds' range    
                                 pos = (numDigits % 3) + 1; place = " Hundred "; break;
                             case 4://thousands' range    
@@ -200,7 +220,7 @@ namespace ConvertCurrencyToWords
 
             return word.Trim();
         }
-        private static string ones(string Number)
+        private static string Ones(string Number)
         {
             int _Number = Convert.ToInt32(Number);
             string name = "";
@@ -219,7 +239,7 @@ namespace ConvertCurrencyToWords
             }
             return name;
         }
-        private static string tens(string Number)
+        private static string Tens(string Number)
         {
             int intNumber = Convert.ToInt32(Number);
             string name = null;
