@@ -5,11 +5,13 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
-        Title="ConvertCurrencyToWords" Height="200" Width="420">
+        Title="Convert Currency To Words" 
+        Height="200" 
+        Width="420">
     <StackPanel Margin="6,6,6,6" Background="#A4E8E8E8">
         <TextBlock TextWrapping="Wrap" 
                    TextAlignment="Center" 
-                   Text="Enter a number to have it converted to words." />
+                   Text="Enter a Number to have it Converted to Words." FontSize="14" />
         <TextBox x:Name="txtboxNumber" 
                  Width="150" 
                  MaxLength="15" 
@@ -24,7 +26,7 @@
                  VerticalAlignment="Stretch">Convert</Button>
         <TextBox Name="txtblkWords" 
                  TextWrapping="Wrap" 
-                 Margin="5" 
-                 PreviewTextInput="TxtblkWords_PreviewTextInput" />
+                 Margin="5"  
+                 IsReadOnly="True"  />
     </StackPanel>
 </Window>
