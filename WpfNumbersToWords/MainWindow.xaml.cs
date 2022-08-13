@@ -37,22 +37,18 @@ namespace ConvertCurrencyToWords
 
         #endregion
 
+        #region Form Functions
+
         private void BtnConvert_Click(object sender, RoutedEventArgs args)
-        {
-            string strNumberIn = txtboxNumber.Text;
-            int numberOfDecimals = 0;
+        { 
             try
             {
-                bool isDouble = double.TryParse(strNumberIn, out double NumberIn);
+                string numberInput = Regex.Replace(txtboxNumber.Text, @"\s+", ""); ;
+                int numberOfDecimals = 0;
+                bool isDouble = double.TryParse(numberInput, out double NumberIn);
                 if (isDouble)
-                {
-                    if (strNumberIn.Contains(".") || strNumberIn.Contains("-"))//
-                    { 
-                        throw new ArgumentException($"All characters must be digits. No negative numbers and no periods. " +
-                                                    $"Use commas to separate dollars and cents.", strNumberIn.ToString());
-                    }
-
-                    int decimalPlace = strNumberIn.IndexOf(",");
+                { 
+                    int decimalPlace = numberInput.IndexOf(",");
                     
                     // input value contians NO decimal value
                     if (decimalPlace == -1)  
@@ -61,92 +57,105 @@ namespace ConvertCurrencyToWords
                     }
                     else
                     {   // Yes we have a decimal place
-                        numberOfDecimals = strNumberIn.Length - decimalPlace - 1;
+                        numberOfDecimals = numberInput.Length - decimalPlace - 1;
                     }
                     if (numberOfDecimals < 3)
                     {
                         // Must remove any leading zeros.
-                        strNumberIn = strNumberIn.TrimStart(new Char[] { '0' });
-                        txtblkWords.Text = ConvertToWords(strNumberIn);
+                        numberInput = numberInput.TrimStart(new char[] { '0' });
+                        txtblkWords.Text = ConvertToWords(numberInput).ToLower();
                     }
                     else
                     {
-                        throw new ArgumentException("Maximum of two decimal places.", strNumberIn.ToString());
+                        throw new ArgumentException("Maximum of two decimal places.", numberInput.ToString());
                     }
-                }
-                else
-                {
-                    throw new ArgumentException($"All characters must be digits. No commas, no negative numbers, " +
-                        $"no spaces and no other punctuation such as currency symbols.", strNumberIn.ToString());
-                }
+                } 
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Convert Currency to Words");
             }
         }
-        
-        private static string ConvertToWords(string strNumberIn)
+
+        private void PreviewTextInput(object sender, TextCompositionEventArgs args)
         {
-            string strConverted = "", strWholeNumber = "", strFractionalNumber = "", strDollars = "Dollars", pointStr = "", strCents = "";
             try
             {
-                int decimalPlace = strNumberIn.IndexOf(",");
-                if (decimalPlace >= 0)
-                {
-                    strWholeNumber = strNumberIn.Substring(0, decimalPlace); 
-                    strFractionalNumber = strNumberIn.Substring(decimalPlace + 1); 
-                    strDollars = strDollars + " and";
-                    strCents = "Cents" + strCents;
-
-                    pointStr = ConvertDecimals(strFractionalNumber);
-                }
-                else
-                {
-                    // no decimal place given therefore just do whole number no cents.
-                    strWholeNumber = strNumberIn;
-                }
-                strConverted = string.Format("{0} {1}{2} {3}",
-                    ConvertWholeNumber(strWholeNumber).Trim(), strDollars, pointStr, strCents);
+                args.Handled = !IsTextAllowed(args.Text);
             }
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
-            return strConverted;
+        }
+
+        #endregion
+
+        #region Helper Functions
+
+        private static string ConvertToWords(string numberInput)
+        {
+            try
+            {
+                string result = "", wholeNumber = "", fractionalNumber = "", dollars = "Dollars", pointStr = "", cents = "";
+
+                int decimalPlace = numberInput.IndexOf(",");
+                if (decimalPlace >= 0)
+                {
+                    wholeNumber = numberInput.Substring(0, decimalPlace); 
+                    fractionalNumber = numberInput.Substring(decimalPlace + 1);
+                    dollars = dollars + " and";
+                    cents = "Cents" + cents;
+
+                    pointStr = ConvertDecimals(fractionalNumber);
+                }
+                else
+                {
+                    // no decimal place given therefore just do whole number no cents.
+                    wholeNumber = numberInput;
+                }
+                result = string.Format("{0} {1}{2} {3}",
+                    ConvertWholeNumber(wholeNumber).Trim(), dollars, pointStr, cents);
+
+                return result; 
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
 
         // strFractionalNumber is everything after the decimal point (cents) 
-        private static string ConvertDecimals(string strFractionalNumber)
+        private static string ConvertDecimals(string fractionalNumber)
         {
             try
             {
                 string engOne = "", convertDecimal = "";
-                if (strFractionalNumber.Length == 0)
+                if (fractionalNumber.Length == 0)
                 {
                     engOne = "Zero";
                 }
-                if (strFractionalNumber.Length == 1)
+                if (fractionalNumber.Length == 1)
                 {
-                    if (strFractionalNumber == "0")
-                    {   // they put "?.0"
+                    if (fractionalNumber == "0")
+                    {   // they put "?,0"
                         engOne = "Zero";
                     }
                     else
-                    {   // they put "?.1" or "?.2" or "?.3" or and so on
-                        strFractionalNumber = strFractionalNumber + "0";
-                        engOne = ConvertWholeNumber(strFractionalNumber);
+                    {   // they put "?,1" or "?,2" or "?,3" or and so on
+                        fractionalNumber = fractionalNumber + "0";
+                        engOne = ConvertWholeNumber(fractionalNumber);
                     }
                 }
-                if (strFractionalNumber.Length == 2)
+                if (fractionalNumber.Length == 2)
                 {
-                    if (strFractionalNumber == "00")
+                    if (fractionalNumber == "00")
                     {
                         engOne = "Zero";
                     }
                     else
                     {
-                        engOne = ConvertWholeNumber(strFractionalNumber);
+                        engOne = ConvertWholeNumber(fractionalNumber);
                     }
                 }
                 convertDecimal += " " + engOne;
@@ -206,7 +215,7 @@ namespace ConvertCurrencyToWords
                         }
                         if (!isDone)
                         {   
-                            // if transalation is not done, continue...(Recursion comes in now!!)    
+                            // if translation is not done, continue...(Recursion comes in now!!)    
                             if (number.Substring(0, position) != "0" && number.Substring(position) != "0")
                             {
                                 word = ConvertWholeNumber(number.Substring(0, position)) +
@@ -234,9 +243,9 @@ namespace ConvertCurrencyToWords
         {
             try
             {
-                int _Number = Convert.ToInt32(number);
+                int _number = Convert.ToInt32(number);
                 string name = "";
-                switch (_Number)
+                switch (_number)
                 {
                     //case 0: name = "Zero"; break; // ??????? added
                     case 1: name = "One"; break;
@@ -298,18 +307,8 @@ namespace ConvertCurrencyToWords
             {
                 throw new Exception(ex.Message);
             } 
-        } 
-
-        private void PreviewTextInput(object sender, TextCompositionEventArgs args)
-        {
-            try
-            {
-                args.Handled = !IsTextAllowed(args.Text); 
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
         }
+
+        #endregion
     }
 }
