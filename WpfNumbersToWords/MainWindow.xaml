@@ -9,24 +9,33 @@
         Height="200" 
         Width="420">
     <StackPanel Margin="6,6,6,6" Background="#A4E8E8E8">
+
         <TextBlock TextWrapping="Wrap" 
                    TextAlignment="Center" 
-                   Text="Enter a Number to have it Converted to Words." FontSize="14" />
+                   Text="Enter a Number to have it Converted to Words." 
+                   FontSize="14" 
+                   FontFamily="Times New Roman" />
+
         <TextBox x:Name="txtboxNumber" 
                  Width="150" 
                  MaxLength="15" 
                  Margin="10" 
                  PreviewTextInput="PreviewTextInput"/>
+
         <Button  Name="btnConvert" 
-                 Height="30" 
-                 Width="80" 
+                 Height="20" 
+                 Width="64" 
                  Click="BtnConvert_Click" 
                  Background="#FF8FDAFF" 
                  HorizontalAlignment="Center" 
-                 VerticalAlignment="Stretch">Convert</Button>
+                 VerticalAlignment="Center" 
+                 FontFamily="Times New Roman">Convert</Button>
+
         <TextBox Name="txtblkWords" 
                  TextWrapping="Wrap" 
                  Margin="5"  
-                 IsReadOnly="True"  />
+                 IsReadOnly="True" 
+                 Height="63" />
+
     </StackPanel>
 </Window>

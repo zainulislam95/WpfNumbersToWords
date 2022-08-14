@@ -16,41 +16,42 @@ namespace ConvertCurrencyToWords
 
         #endregion
 
-        #region Check Valid Currency
-
-        //RegularExpression that accepts number and commas only
-        private static readonly Regex _regex = new Regex("[^0-9,]+");
-         
-        // Summary:
-        //     Checks if the input value matches provideds RegularExpression. 
-        //
-        // Parameters:
-        //   text:
-        //     A string containing a number to match with RegularExpression.
-        //  
-        // Returns:
-        //     true if text when input value doesn't match; otherwise, false.
-        private static bool IsTextAllowed(string text)
-        {
-            return !_regex.IsMatch(text);
-        }
-
-        #endregion
-
         #region Form Functions
 
+        // Summary:
+        //     Checks if the Input value matches provided RegularExpression when Input string is entered. 
+        //    
+        // Result:
+        //     Allows only Numeric values including Comma only.
+        private void PreviewTextInput(object sender, TextCompositionEventArgs args)
+        {
+            try
+            {
+                args.Handled = !IsTextAllowed(args.Text);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        // Summary:
+        //     Triggers on BtnConvert Click
+        // 
+        // Result:
+        //     Send txtboxNumber value for conversion
         private void BtnConvert_Click(object sender, RoutedEventArgs args)
         { 
             try
             {
-                string numberInput = Regex.Replace(txtboxNumber.Text, @"\s+", ""); ;
-                int numberOfDecimals = 0;
+                int numberOfDecimals = 0; 
+                string numberInput = txtboxNumber.Text;
                 bool isDouble = double.TryParse(numberInput, out double NumberIn);
                 if (isDouble)
                 { 
                     int decimalPlace = numberInput.IndexOf(",");
                     
-                    // input value contians NO decimal value
+                    // Input value contians NO decimal value
                     if (decimalPlace == -1)  
                     {
                         numberOfDecimals = 0;
@@ -76,28 +77,46 @@ namespace ConvertCurrencyToWords
                 MessageBox.Show(ex.Message, "Convert Currency to Words");
             }
         }
-
-        private void PreviewTextInput(object sender, TextCompositionEventArgs args)
-        {
-            try
-            {
-                args.Handled = !IsTextAllowed(args.Text);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
+          
         #endregion
 
         #region Helper Functions
+         
+            #region Check Valid Currency
 
+            //RegularExpression that accepts Numeric values and Comma only
+            private static readonly Regex _regex = new Regex("[^0-9,]+");
+
+            // Summary:
+            //     Checks if the Input value matches provided RegularExpression. 
+            //
+            // Parameters:
+            //   text:
+            //     A string containing a number to match with RegularExpression.
+            //  
+            // Returns:
+            //     true if text when Input value doesn't match; otherwise, false.
+            private static bool IsTextAllowed(string text)
+            {
+                return !_regex.IsMatch(text);
+            }
+
+        #endregion
+
+        // Summary:
+        //     Converts numberInput into Words
+        //
+        // Parameters:
+        //   numberInput:
+        //     A string containing a Input Value.
+        //  
+        // Returns:
+        //     Numeric value converted to Words.
         private static string ConvertToWords(string numberInput)
         {
             try
             {
-                string result = "", wholeNumber = "", fractionalNumber = "", dollars = "Dollars", pointStr = "", cents = "";
+                string result = "", wholeNumber = "", fractionalNumber = "", dollars = "Dollars", fractionalStr = "", cents = "";
 
                 int decimalPlace = numberInput.IndexOf(",");
                 if (decimalPlace >= 0)
@@ -107,7 +126,7 @@ namespace ConvertCurrencyToWords
                     dollars = dollars + " and";
                     cents = "Cents" + cents;
 
-                    pointStr = ConvertDecimals(fractionalNumber);
+                    fractionalStr = ConvertDecimals(fractionalNumber);
                 }
                 else
                 {
@@ -115,7 +134,7 @@ namespace ConvertCurrencyToWords
                     wholeNumber = numberInput;
                 }
                 result = string.Format("{0} {1}{2} {3}",
-                    ConvertWholeNumber(wholeNumber).Trim(), dollars, pointStr, cents);
+                    ConvertWholeNumber(wholeNumber).Trim(), dollars, fractionalStr, cents);
 
                 return result; 
             }
@@ -125,7 +144,15 @@ namespace ConvertCurrencyToWords
             }
         }
 
-        // strFractionalNumber is everything after the decimal point (cents) 
+        // Summary:
+        //     Converts fractionalNumber into Words
+        //
+        // Parameters:
+        //   fractionalNumber:
+        //     A string containing a Fractional Value.
+        //  
+        // Returns:
+        //     fractionalNumber converted to Words (Cents). 
         private static string ConvertDecimals(string fractionalNumber)
         {
             try
@@ -138,11 +165,11 @@ namespace ConvertCurrencyToWords
                 if (fractionalNumber.Length == 1)
                 {
                     if (fractionalNumber == "0")
-                    {   // they put "?,0"
+                    {   // when input value "?,0"
                         engOne = "Zero";
                     }
                     else
-                    {   // they put "?,1" or "?,2" or "?,3" or and so on
+                    {   // when input value "?,1" or "?,2" or "?,3" or and so on
                         fractionalNumber = fractionalNumber + "0";
                         engOne = ConvertWholeNumber(fractionalNumber);
                     }
@@ -166,13 +193,23 @@ namespace ConvertCurrencyToWords
                 throw new Exception(ex.Message);
             } 
         }
-        
+
+        // Summary:
+        //     Converts number into Words
+        //
+        // Parameters:
+        //   number:
+        //     A string containing a Whole Number.
+        //  
+        // Returns:
+        //     number converted to Words (Dollars).
         private static string ConvertWholeNumber(string number)
         {
             try
             {
-                string word = ""; 
-                bool isDone = false;  //test if already translated   
+                string word = "";
+                //Check if already translated   
+                bool isDone = false;  
                 bool isDouble = double.TryParse(number, out double ddd);
                 if (!isDouble) return "Zero"; // we got empty string so zero dollars 
                 double doubleAmount = Convert.ToDouble(number);
@@ -183,34 +220,28 @@ namespace ConvertCurrencyToWords
                     {
                         int numDigits = doubleAmount.ToString().Length;
                         number = doubleAmount.ToString();
-                        int position = 0; //store digit grouping    
+                        int position = 0;    
                         string place = ""; //digit grouping name:hundres,thousand,etc...    
                         switch (numDigits)
                         {
-                            case 1://ones' range    
+                            case 1://Ones' range    
                                 word = Ones(number); isDone = true; break;
-                            case 2://tens' range    
+                            case 2://Tens' range    
                                 word = Tens(number); isDone = true; break;
-                            case 3://hundreds' range    
+                            case 3://Hundreds' range    
                                 position = (numDigits % 3) + 1; place = " Hundred "; break;
-                            case 4://thousands' range    
+                            case 4://Thousands' range    
                             case 5:
                             case 6: position = (numDigits % 4) + 1; place = " Thousand "; break;
-                            case 7://millions' range    
+                            case 7://Millions' range    
                             case 8:
                             case 9: position = (numDigits % 7) + 1; place = " Million "; break;
                             case 10://Billions's range    
                             case 11:
                             case 12: position = (numDigits % 10) + 1; place = " Billion "; break;
-                            case 13: // Trillions range
+                            case 13: //Trillions range
                             case 14:
-                            case 15: position = (numDigits % 13) + 1; place = " Trillion "; break;
-                            case 16: // Quadrillion range
-                            case 17:
-                            case 18: position = (numDigits % 16) + 1; place = " Quadrillion "; break;
-                            case 19: // Quintillion range
-                            case 20:
-                            case 21: position = (numDigits % 19) + 1; place = " Quintillion "; break;
+                            case 15: position = (numDigits % 13) + 1; place = " Trillion "; break; 
                             default: isDone = true; break;
                         }
                         if (!isDone)
@@ -238,16 +269,24 @@ namespace ConvertCurrencyToWords
                 throw new Exception(ex.Message);
             } 
         }
-        
+
+        // Summary:
+        //     Converts number into values of Ones(e.g One, Two etc)
+        //
+        // Parameters:
+        //   number:
+        //     A string containing a Number.
+        //  
+        // Returns:
+        //     number converted to Words.
         private static string Ones(string number)
         {
             try
             {
-                int _number = Convert.ToInt32(number);
+                int intNumber = Convert.ToInt32(number);
                 string name = "";
-                switch (_number)
-                {
-                    //case 0: name = "Zero"; break; // ??????? added
+                switch (intNumber)
+                { 
                     case 1: name = "One"; break;
                     case 2: name = "Two"; break;
                     case 3: name = "Three"; break;
@@ -265,16 +304,24 @@ namespace ConvertCurrencyToWords
                 throw new Exception(ex.Message);
             } 
         }
-         
+
+        // Summary:
+        //     Converts number into values of Tens(e.g Ten, Eleven etc)
+        //
+        // Parameters:
+        //   number:
+        //     A string containing a Number.
+        //  
+        // Returns:
+        //     number converted to Words.
         private static string Tens(string number)
         {
             try
             {
                 int intNumber = Convert.ToInt32(number);
-                string name = null;
+                string name = "";
                 switch (intNumber)
-                {
-                    //case 0: name = "Zero"; break; this doesn't work
+                { 
                     case 10: name = "Ten"; break;
                     case 11: name = "Eleven"; break;
                     case 12: name = "Twelve"; break;
@@ -296,8 +343,7 @@ namespace ConvertCurrencyToWords
                     default:
                         if (intNumber > 0)
                         {
-                            name = Tens(number.Substring(0, 1) + "0") + " "
-                                + Ones(number.Substring(1));
+                            name = Tens(number.Substring(0, 1) + "0") + " " + Ones(number.Substring(1));
                         }
                         break;
                 }
