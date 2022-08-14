@@ -45,7 +45,7 @@ namespace ConvertCurrencyToWords
             try
             {
                 int numberOfDecimals = 0; 
-                string numberInput = txtboxNumber.Text;
+                string numberInput = Regex.Replace(txtboxNumber.Text, @"\s+", "");
                 bool isDouble = double.TryParse(numberInput, out double NumberIn);
                 if (isDouble)
                 { 
